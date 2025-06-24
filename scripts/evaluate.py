@@ -635,6 +635,19 @@ def main(argv: list[str]) -> None:
           regions=regions,
           derived_variables=derived_variables,
       ),
+      'gaussian_spatial': config.Eval(Add commentMore actions
+          metrics={
+              'crps': metrics.SpatialGaussianCRPS(),
+              'variance': metrics.SpatialGaussianVariance(),
+              'bias': metrics.SpatialBias(),
+              'mse': metrics.SpatialMSE(),
+              'mae': metrics.SpatialMAE(),
+          },
+          against_analysis=False,
+          regions=regions,
+          derived_variables=derived_variables,
+          output_format='zarr',
+      ),
       'gaussian_binary': config.Eval(
           metrics={
               'brier_score': metrics.GaussianBrierScore(
