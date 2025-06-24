@@ -864,6 +864,20 @@ class GaussianCRPS(Metric):
         skipna=skipna,
     )
 
+@dataclasses.dataclass
+class SpatialGaussianCRPS(Metric):
+  """CRPS for a Gaussian without spatial averaging."""
+
+  def compute_chunk(
+      self,
+      forecast: xr.Dataset,
+      truth: xr.Dataset,
+      region: t.Optional[Region] = None,
+      skipna: bool = False,
+  ) -> xr.Dataset:
+    """GaussianCRPS, for a time chunk of data."""
+    return _pointwise_gaussian_crps(forecast, truth)
+
 
 def _pointwise_gaussian_crps(
     forecast: xr.Dataset, truth: xr.Dataset
@@ -935,6 +949,30 @@ class GaussianVariance(Metric):
         region=region,
         skipna=skipna,
     )
+
+@dataclasses.dataclass
+class SpatialGaussianVariance(Metric):
+  """The variance of a Gaussian forecast without spatial averaging."""
+
+  def compute_chunk(
+      self,
+      forecast: xr.Dataset,
+      truth: xr.Dataset,
+      region: t.Optional[Region] = None,
+      skipna: bool = False,
+  ) -> xr.Dataset:
+    """GaussianVariance, for a time chunk of data."""
+    del truth  # unused
+    var_list = []
+    dataset = {}
+    for var in forecast.keys():
+      if f"{var}_std" in forecast.keys():
+        var_list.append(var)
+    for var_name in var_list:
+      variance = forecast[f"{var_name}_std"] * forecast[f"{var_name}_std"]
+      dataset[var_name] = variance
+
+    return xr.Dataset(dataset, coords=forecast.coords)
 
 
 @dataclasses.dataclass
